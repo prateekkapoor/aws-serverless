@@ -1,0 +1,274 @@
+# Welcome to Serverless!
+#
+# This file is the main config file for your service.
+# It's very minimal at this point and uses default values.
+# You can always add more config options for more control.
+# We've included some commented out config examples here.
+# Just uncomment any of them to get that config option.
+#
+# For full config options, check the docs:
+#    docs.serverless.com
+#
+# Happy Coding!
+
+service: chatops
+
+# You can pin your service to only deploy with a specific Serverless version
+# Check out our docs for more details
+frameworkVersion: ">=1.16.1"
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  namespace: ${self:service}-${self:custom.stage}
+
+provider:
+  name: aws
+  runtime: java8
+
+# you can overwrite defaults here
+  stage: dev
+  region: us-east-1
+  timeout: 30
+
+# you can add statements to the Lambda function's IAM Role here
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:DescribeTable
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource: arn:aws:dynamodb:*:*:table/${self:provider.environment.TEAMS_TABLE}
+    - Effect: Allow
+      Action:
+        - dynamodb:DescribeTable
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource: arn:aws:dynamodb:*:*:table/${self:provider.environment.USER_TABLE}
+    - Effect: Allow
+      Action:
+        - dynamodb:DescribeTable
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource: arn:aws:dynamodb:*:*:table/${self:provider.environment.COMMANDS_TABLE}
+    - Effect: Allow
+      Action:
+        - dynamodb:DescribeTable
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource: arn:aws:dynamodb:*:*:table/${self:provider.environment.MSG_DIGEST_TABLE}
+    - Effect: Allow
+      Action:
+        - dynamodb:DescribeTable
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource: arn:aws:dynamodb:*:*:table/${self:provider.environment.ACTIONS_TABLE}
+    - Effect: Allow
+      Action:
+        - dynamodb:DescribeTable
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource: arn:aws:dynamodb:*:*:table/${self:provider.environment.CORTANA_BEAER_TOKEN_TABLE}
+    - Effect: Allow
+      Action:
+        - dynamodb:DescribeTable
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource: arn:aws:dynamodb:*:*:table/${self:provider.environment.CORTANA_SESSION_TABLE}
+    - Effect: Allow
+      Action:
+        - dynamodb:DescribeTable
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource: arn:aws:dynamodb:*:*:table/${self:provider.environment.STATUS_RECORD_TABLE}
+    - Effect: Allow
+      Action:
+        - dynamodb:DescribeTable
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource: arn:aws:dynamodb:*:*:table/${self:provider.environment.USER_MASTER_TABLE}
+    - Effect: Allow
+      Action:
+        - lex:PostText
+        - lex:PostContent
+      Resource: arn:aws:lex:*:*:bot:${self:provider.environment.BOT_NAME}:*    
+
+    - Effect: Allow
+      Action:
+       - "ses:*"
+      Resource: "*"
+
+      
+# you can define service wide environment variables here
+  environment:
+    DECISION_URL: https://yh2kig5ui1.execute-api.us-east-1.amazonaws.com/dev/chatBotInvoker
+#
+
+# you can add packaging information here
+package:
+  artifact: ../target/service-assembly-1.0-SNAPSHOT.jar
+
+functions:
+  actionsResponse:
+    handler: com.demo.chatops.provider.actions.endpoint.ActionsResponse
+    events:
+      - http:
+          path: reponseHandler
+          method: post
+
+
+# you can add CloudFormation resource templates here
+resources:
+  Resources:
+    UsersDynamoDBTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.USER_TABLE}
+        AttributeDefinitions:
+          - AttributeName: phone_number
+            AttributeType: N
+        KeySchema: 
+          - AttributeName: phone_number
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+    TeamsDynamoDBTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.TEAMS_TABLE}
+        AttributeDefinitions:
+          - AttributeName: team_id
+            AttributeType: S
+        KeySchema: 
+          - AttributeName: team_id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+    CommandsDynamoDBTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.COMMANDS_TABLE}
+        AttributeDefinitions:
+          - AttributeName: intent
+            AttributeType: S
+        KeySchema: 
+          - AttributeName: intent
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+    MessageDigestDynamoDBTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.MSG_DIGEST_TABLE}
+        AttributeDefinitions:
+          - AttributeName: digest
+            AttributeType: B
+        KeySchema: 
+          - AttributeName: digest
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+    ActionsDynamoDBTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.ACTIONS_TABLE}
+        AttributeDefinitions:
+          - AttributeName: job_id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: job_id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+    CortanaBearerTokenTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.CORTANA_BEAER_TOKEN_TABLE}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+    CortanaSessionTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.CORTANA_SESSION_TABLE}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+    StatusRecordTable:
+          Type: AWS::DynamoDB::Table
+          Properties:
+            TableName: ${self:provider.environment.STATUS_RECORD_TABLE}
+            AttributeDefinitions:
+              - AttributeName: id
+                AttributeType: S
+            KeySchema:
+              - AttributeName: id
+                KeyType: HASH
+            ProvisionedThroughput:
+              ReadCapacityUnits: 1
+              WriteCapacityUnits: 1
+    UserMasterRecordTable:
+          Type: "AWS::DynamoDB::Table"
+          Properties:
+            TableName: ${self:provider.environment.USER_MASTER_TABLE}
+            AttributeDefinitions:
+              - AttributeName: messenger_id
+                AttributeType: S
+            KeySchema:
+              - AttributeName: messenger_id
+                KeyType: HASH
+            ProvisionedThroughput:
+              ReadCapacityUnits: 5
+              WriteCapacityUnits: 1
